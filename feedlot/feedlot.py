@@ -13,5 +13,7 @@ query(hot).
 query(normalTemperature).
 """
 
-result = get_evaluatable().create_from(PrologString(temperature_model)).evaluate()
-print result
+temperatures_result = get_evaluatable().create_from(PrologString(temperature_model)).evaluate()
+temperatures = {}
+for name, value in temperatures_result.items():
+    temperatures[str(name)] = value
