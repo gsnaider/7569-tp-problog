@@ -1,5 +1,6 @@
 from problog.program import PrologString
 from problog import get_evaluatable
+import re
 
 #TODO: Move model strings to external files.
 
@@ -100,18 +101,28 @@ def format_model(model, value):
     return model % value
 
 
+def format_result(results):
+    results_as_dict = {}
+    for key in results.keys():
+        search = re.search('(\w+)\(([0-9\.]+)\)', key)
+        if search:
+            results_as_dict[search.group(1)] = float(search.group(2))
+        else:
+            print "Error: Result did not match."
+    return results_as_dict
+
 #TODO: Read data from console
 temperature = 30
 day = 50
 
 temperatures = evaluate_model(format_model(temperature_model, temperature))
-print temperatures
+print format_result(temperatures)
 
 dry_food = evaluate_model(format_model(dry_food_model, day))
-print dry_food
+print format_result(dry_food)
 
 food_percentages = evaluate_model(format_model(food_percentages_model, day))
-print food_percentages
+print format_result(food_percentages)
 
 
 
