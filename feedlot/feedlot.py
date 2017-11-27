@@ -52,17 +52,45 @@ def read_rules_files():
         rules.append(file.read())
     return tuple(rules)
 
-# TODO: Read data from console
-heads = 50
-day = 18
-initial_weight = 225
-temperature = 26
+
+def read_from_console(prompt, conversion_function):
+    val = None
+    while(val == None):
+        input = raw_input(prompt)
+        try:
+            val = conversion_function(input)
+        except ValueError:
+            print("Tipo de dato invalido.")
+    return val
+
+
+
+def read_values_from_console():
+    heads = read_from_console("Ingrese cantidad de ganado (cabezas):", int)
+    while (heads < 1):
+        print "Valor invalido."
+        heads = read_from_console("Ingrese cantidad de ganado (cabezas):", int)
+
+    day = read_from_console("Ingrese el dia actual del rodeo:", int)
+    while (day < 1):
+        print "Valor invalido."
+        day = read_from_console("Ingrese el dia actual del rodeo:", int)
+
+    initial_weight = read_from_console("Ingrese el peso inicial del ganado:", float)
+    while (initial_weight <= 0):
+        print "Valor invalido."
+        initial_weight = read_from_console("Ingrese el peso inicial del ganado:", float)
+
+    temperature = read_from_console("Ingrese la temperatura actual:", float)
+
+    return (heads, day, initial_weight, temperature)
+
+
+(heads, day, initial_weight, temperature) = read_values_from_console()
 
 current_weight = calculate_current_weight(initial_weight)
 
 (temperature_rules, weight_in_dry_food_rules, food_percentages_rules) = read_rules_files()
-
-
 temperatures_result = format_result(evaluate_model(format_rules(temperature_rules, temperature)))
 weight_in_dry_food_result = format_result(evaluate_model(format_rules(weight_in_dry_food_rules, day)))
 food_percentages_result = format_result(evaluate_model(format_rules(food_percentages_rules, day)))
