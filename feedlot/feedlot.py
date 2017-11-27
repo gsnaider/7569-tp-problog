@@ -1,6 +1,8 @@
 from problog.program import PrologString
 from problog import get_evaluatable
 
+#TODO: Move model strings to external files.
+
 temperature_model = """
 temperatureFactor(cold,1.05).
 temperatureFactor(hot,0.95).
@@ -14,7 +16,7 @@ temperatureFactor(F) :- cold, temperatureFactor(cold,FC), F is FC.
 temperatureFactor(F) :- hot, temperatureFactor(hot,FH), F is FH.
 temperatureFactor(F) :- normal, temperatureFactor(normal,FN), F is FN.
 
-temperature(10).
+temperature(%s).
 
 query(temperatureFactor(F)).
 """
@@ -35,7 +37,7 @@ dryFoodPercentage(P) :- day6, dryFoodPercentage(day6, P6), P is P6.
 dryFoodPercentage(P) :- day15, dryFoodPercentage(day15, P15), P is P15.
 dryFoodPercentage(P) :- day26, dryFoodPercentage(day26, P26), P is P26.
 
-day(5).
+day(%s).
 
 query(dryFoodPercentage(P)).
 """
@@ -77,7 +79,7 @@ mineralPremixPercentage(P) :- day1, mineralPremixPercentage(day1, P1), P is P1.
 mineralPremixPercentage(P) :- day11, mineralPremixPercentage(day11, P11), P is P11.
 mineralPremixPercentage(P) :- day22, mineralPremixPercentage(day22, P22), P is P22.
 
-day(18).
+day(%s).
 
 query(sorghumPercentage(P)).
 query(cornPercentage(P)).
@@ -94,13 +96,21 @@ def evaluate_model(model):
     return result_dict
 
 
-temperatures = evaluate_model(temperature_model)
+def format_model(model, value):
+    return model % value
+
+
+#TODO: Read data from console
+temperature = 30
+day = 50
+
+temperatures = evaluate_model(format_model(temperature_model, temperature))
 print temperatures
 
-dry_food = evaluate_model(dry_food_model)
+dry_food = evaluate_model(format_model(dry_food_model, day))
 print dry_food
 
-food_percentages = evaluate_model(food_percentages_model)
+food_percentages = evaluate_model(format_model(food_percentages_model, day))
 print food_percentages
 
 
