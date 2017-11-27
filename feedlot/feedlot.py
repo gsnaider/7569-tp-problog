@@ -2,101 +2,9 @@ from problog.program import PrologString
 from problog import get_evaluatable
 import re
 
-# TODO: Move model strings to external files.
-
-temperature_model = """
-temperatureFactor(cold,1.05).
-temperatureFactor(hot,0.95).
-temperatureFactor(normal,1.00).
-
-cold :- temperature(T), T<20.
-hot :- temperature(T), T>28.
-normal :- \+cold, \+hot.
-
-temperatureFactor(F) :- cold, temperatureFactor(cold,FC), F is FC.
-temperatureFactor(F) :- hot, temperatureFactor(hot,FH), F is FH.
-temperatureFactor(F) :- normal, temperatureFactor(normal,FN), F is FN.
-
-temperature(%s).
-
-query(temperatureFactor(F)).
-"""
-
-weight_in_dry_food_model = """
-weightInDryFoodPercentage(day1, 0.01).
-weightInDryFoodPercentage(day6, 0.02).
-weightInDryFoodPercentage(day15, 0.03).
-weightInDryFoodPercentage(day26, 0.029).
-
-day1 :- day(D), D<6.
-day6 :- day(D), D>=6, D<15.
-day15 :- day(D), D>=15, D<26.
-day26 :- day(D), D>=26.
-
-weightInDryFoodPercentage(P) :- day1, weightInDryFoodPercentage(day1, P1), P is P1.
-weightInDryFoodPercentage(P) :- day6, weightInDryFoodPercentage(day6, P6), P is P6.
-weightInDryFoodPercentage(P) :- day15, weightInDryFoodPercentage(day15, P15), P is P15.
-weightInDryFoodPercentage(P) :- day26, weightInDryFoodPercentage(day26, P26), P is P26.
-
-day(%s).
-
-query(weightInDryFoodPercentage(P)).
-"""
-
-food_percentages_model = """
-sorghumPercentage(day1, 0.48).
-sorghumPercentage(day11, 0.37).
-sorghumPercentage(day22, 0.265).
-
-cornPercentage(day1, 0.38).
-cornPercentage(day11, 0.49).
-cornPercentage(day22, 0.598).
-
-soyExpellerPercentage(day1, 0.124).
-soyExpellerPercentage(day11, 0.1225).
-soyExpellerPercentage(day22, 0.12).
-
-mineralPremixPercentage(day1, 0.016).
-mineralPremixPercentage(day11, 0.0175).
-mineralPremixPercentage(day22, 0.017).
-
-dryFoodPercentage(day1, 0.62).
-dryFoodPercentage(day11, 0.67).
-dryFoodPercentage(day22, 0.73).
-
-day1 :- day(D), D<11.
-day11 :- day(D), D>=11, D<22.
-day22 :- day(D), D>=22.
-
-sorghumPercentage(P) :- day1, sorghumPercentage(day1, P1), P is P1.
-sorghumPercentage(P) :- day11, sorghumPercentage(day11, P11), P is P11.
-sorghumPercentage(P) :- day22, sorghumPercentage(day22, P22), P is P22.
-
-cornPercentage(P) :- day1, cornPercentage(day1, P1), P is P1.
-cornPercentage(P) :- day11, cornPercentage(day11, P11), P is P11.
-cornPercentage(P) :- day22, cornPercentage(day22, P22), P is P22.
-
-soyExpellerPercentage(P) :- day1, soyExpellerPercentage(day1, P1), P is P1.
-soyExpellerPercentage(P) :- day11, soyExpellerPercentage(day11, P11), P is P11.
-soyExpellerPercentage(P) :- day22, soyExpellerPercentage(day22, P22), P is P22.
-
-mineralPremixPercentage(P) :- day1, mineralPremixPercentage(day1, P1), P is P1.
-mineralPremixPercentage(P) :- day11, mineralPremixPercentage(day11, P11), P is P11.
-mineralPremixPercentage(P) :- day22, mineralPremixPercentage(day22, P22), P is P22.
-
-dryFoodPercentage(P) :- day1, dryFoodPercentage(day1, P1), P is P1.
-dryFoodPercentage(P) :- day11, dryFoodPercentage(day11, P11), P is P11.
-dryFoodPercentage(P) :- day22, dryFoodPercentage(day22, P22), P is P22.
-
-day(%s).
-
-query(sorghumPercentage(P)).
-query(cornPercentage(P)).
-query(soyExpellerPercentage(P)).
-query(mineralPremixPercentage(P)).
-query(dryFoodPercentage(P)).
-"""
-
+TEMPERATURE_RULES_PATH = "rules/temperature.pl"
+WEIGHT_IN_DRY_FOOD_RULES_PATH = "rules/weight-in-dry-food.pl"
+FOOD_PERCENTAGES_RULES_PATH = "rules/food-percentages.pl"
 
 def evaluate_model(model):
     result = get_evaluatable().create_from(PrologString(model)).evaluate()
@@ -106,8 +14,8 @@ def evaluate_model(model):
     return result_dict
 
 
-def format_model(model, value):
-    return model % value
+def format_rules(rules, value):
+    return rules % value
 
 
 def format_result(results):
@@ -136,6 +44,14 @@ def round(f):
     return ("%.2f" % f)
 
 
+def read_rules_files():
+    rule_file_paths = [TEMPERATURE_RULES_PATH, WEIGHT_IN_DRY_FOOD_RULES_PATH, FOOD_PERCENTAGES_RULES_PATH]
+    rules = []
+    for path in rule_file_paths:
+        file = open(path, "r")
+        rules.append(file.read())
+    return tuple(rules)
+
 # TODO: Read data from console
 heads = 50
 day = 18
@@ -144,9 +60,12 @@ temperature = 26
 
 current_weight = calculate_current_weight(initial_weight)
 
-temperatures_result = format_result(evaluate_model(format_model(temperature_model, temperature)))
-weight_in_dry_food_result = format_result(evaluate_model(format_model(weight_in_dry_food_model, day)))
-food_percentages_result = format_result(evaluate_model(format_model(food_percentages_model, day)))
+(temperature_rules, weight_in_dry_food_rules, food_percentages_rules) = read_rules_files()
+
+
+temperatures_result = format_result(evaluate_model(format_rules(temperature_rules, temperature)))
+weight_in_dry_food_result = format_result(evaluate_model(format_rules(weight_in_dry_food_rules, day)))
+food_percentages_result = format_result(evaluate_model(format_rules(food_percentages_rules, day)))
 
 dry_food_kilograms = calculate_dry_food_kilograms(current_weight,
                                                   weight_in_dry_food_result.get('weightInDryFoodPercentage'), heads,
